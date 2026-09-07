@@ -1,57 +1,93 @@
-# Roxar MPFM Dashboard Development
+<div align="center">
+
+# Roxar MPFM 2600 · Multiphase Insight Console
+
+**A browser-based executive dashboard for Roxar multiphase flow meter data — ingest `.xlsx` exports, audit the meter's PVT engine, validate Venturi closure, and characterise phase / slug behaviour in seconds.**
+
+[![Live demo](https://img.shields.io/badge/demo-amirrezadlv.github.io%2Froxar--mpfm--dashboard--development-0ea5e9?style=for-the-badge&logo=github)](https://amirrezadlv.github.io/roxar-mpfm-dashboard-development/)
+[![Built with React](https://img.shields.io/badge/React-19-61dafb?style=for-the-badge&logo=react)](https://react.dev)
+[![Vite](https://img.shields.io/badge/Vite-7-646cff?style=for-the-badge&logo=vite)](https://vite.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org)
+[![License: MIT](https://img.shields.io/badge/license-MIT-22c55e?style=for-the-badge)](LICENSE)
+
+</div>
+
+![Overview tab](docs/overview.png)
+
+## Why
+
+Roxar MPFM 2600 field exports arrive as Excel workbooks with mixed unitsystems, native meter columns interleaved with derived ones, and almost no
+engineering narrative attached. The standard workflow — open the file,
+rebuild the conversions in a spreadsheet, sanity-check the PVT table, then
+hand-interpret phase and slug dynamics — is slow, error-prone, and
+untestable.
+
+**Multiphase Insight Console** does that work interactively, in the browser,
+with the same physics the meter itself uses. Drag a workbook onto the page
+(or hit *Import .xlsx*) and you get:
+
+- A normalised dataset (SI + Roxar-native units) with provenance for every column.
+- A live PVT audit comparing the meter's *implied* `Bo / Rs / Z` against a
+  bilinear coefficient model — with the coefficients themselves editable.
+- Venturi / momentum-flux closure, including ρ-implied GVF and venturi-mass
+  reconciliation.
+- Phase-inversion tracking with hysteresis, impedance-response sweeps
+  across the inversion threshold, and a Pearson correlation matrix.
+- A diagnostic engine that flags slugs, density-model drift, GVF boundary
+  excursions, fraction-closure violations, accumulator resets and process
+  / technical alarms.
+
+No data leaves the browser. The whole app ships as a **single HTML file** via
+`vite-plugin-singlefile`, so it also runs perfectly well from a USB stick.
 
 ---
 
-## Overview
-This repository contains the source code and frontend assets for a web-based dashboard designed to visualize operational telemetry and flow assurance data from the Emerson Roxar Multiphase Flow Meter (MPFM). The dashboard facilitates real-time monitoring and analysis of wellsite production metrics.
+## Table of contents
 
-The project is deployed and accessible via GitHub Pages:
-[Roxar MPFM Dashboard Live Page](https://amirrezadlv.github.io/roxar-mpfm-dashboard-development/)
-
----
-
-## Key Features
-
-* **Multiphase Flow Visualization:** Real-time tracking of individual phase flow rates (Oil, Water, and Gas).
-* **Critical Metric Calculations:** Dynamic monitoring of key multiphase flow parameters, including:
-  * Water Liquid Ratio (WLR)
-  * Gas Volume Fraction (GVF)
-* **Operational Telemetry:** Display of essential wellsite operating conditions such as differential pressure, line pressure, and fluid temperature.
-* **Responsive Interface:** A front-end architecture optimized for both desktop analysis and field-portable device viewing.
+- [Features](#features)
+- [Quick start](#quick-start)
+- [Live demo](#live-demo)
+- [Tabs in detail](#tabs-in-detail)
+- [Architecture](#architecture)
+- [File-name context parsing](#file-name-context-parsing)
+- [Tech stack](#tech-stack)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [Acknowledgements](#acknowledgements)
+- [License](#license)
 
 ---
 
-## Technical Architecture
+## Features
 
-The dashboard is built using standard web technologies to ensure lightweight deployment and broad compatibility:
-* **HTML5:** For structural markup and data presentation layout.
-* **CSS3:** For interface styling and visual data hierarchy.
-* **JavaScript:** For dynamic data handling, numerical updates, and interactive user interface elements.
-* **Hosting:** Deployed via GitHub Pages for continuous availability.
-
----
-
-## Data Definitions & Formulas
-
-The dashboard relies on standard multiphase flow engineering equations to interpret the physical behavior of the reservoir fluid.
-
-### Water Liquid Ratio (WLR)
-Represents the fraction of water in the total liquid phase:
-$$ WLR = \frac{Q_w}{Q_w + Q_o} $$
-*(Where $Q_w$ is the water flow rate and $Q_o$ is the oil flow rate)*
-
-### Gas Volume Fraction (GVF)
-Represents the fraction of gas in the total multiphase fluid flow:
-$$ GVF = \frac{Q_g}{Q_g + Q_w + Q_o} $$
-*(Where $Q_g$ is the gas flow rate under operating conditions)*
+| Area | What it does |
+| --- | --- |
+| **Ingestion** | Accepts `.xlsx`, `.xls`, `.csv` exports; recognises both Roxar-native headers (`Sensor Time`, `Oil (m3/hr) Act`, `Water Cut (%)`, …) and field/well-test report headers (`Std.OilFlowrate (SBPD)`, `Act&Std.WaterFlowrate (SBPD)`, `Density (Kg/m3)`, …); auto-converts every column to SI / Roxar-native units (`bar(a)`, `°C`, `m³/h`, `kg/m³`, `mbar`, `kg/h`, `Sm³/Sm³`). |
+| **Drag & drop** | Drop the workbook anywhere on the page; the overlay lights up and ingestion starts. |
+| **Provenance** | Every canonical field is tagged `measured`, `derived`, `modeled` or `missing`, surfaced in the *Data & Diagnostics* tab and as inline chips. |
+| **Test context** | Pad / well / choke size / test date / upstream & downstream choke pressures (`P1avg`, `P2avg`) are parsed from the file name and shown as badges. |
+| **KPIs** | Std. oil, gas, water, WC, GVF, GOR, line P, line T, cumulative production, dominant slug period, alarms counter. |
+| **Choke verdict** | Auto-detects critical vs sub-critical flow using `P₂/P₁ < 0.55`, with a written interpretation that propagates through the choke tab. |
+| **Phase tracking** | Hysteresis-tracked continuous-phase state (oil vs water), with conductivity / permittivity mode overrides, a visual state-strip and timestamped inversion events. |
+| **Impedance models** | Hanai–Bruggeman permittivity (oil-continuous) and Bruggeman effective-medium conductivity (water-continuous), with a sweep plot across the inversion threshold. |
+| **PVT audit** | Bilinear `Bo`, `Rs`, `Z` coefficients editable live; implied (meter-applied) vs modelled factors shown side by side with residuals. |
+| **Venturi / momentum** | Homogeneous-model closure, Δp–Q² relationship with GVF colour shading, mass-rate reconciliation. |
+| **Slug detection** | Dominant period from autocorrelation of detrended oil rate; water-cut spikes flagged when `WC > μ + 2.5σ`. |
+| **Diagnostics** | 10 flag codes (`PROC`, `TECH`, `ACC`, `GVF`, `RHO`, `INV`, `PHASE`, `WC`, `BO`, `SUM`, `VENT`) with severity ranks, click-to-filter in the table. |
+| **Export** | Download the full enriched dataset (measured + derived columns + flags) as CSV. |
+| **Single-file build** | Ship as one `index.html` — no server, no CDN; runs from `file://`. |
+| **Offline** | Everything (parsing, charts, physics) happens client-side; nothing is uploaded. |
 
 ---
 
-## Installation & Setup
+## Quick start
 
-To run this dashboard locally for testing or further development, follow these steps:
+### Prerequisites
 
-1. **Clone the Repository:**
-   ```bash
-   # Clone the project to your local machine
-   git clone [https://github.com/amirrezadlv/roxar-mpfm-dashboard-development.git](https://github.com/amirrezadlv/roxar-mpfm-dashboard-development.git)
+- Node.js **20+** and npm### Local development
+
+```bash
+git clone https://github.com/amirrezadlv/roxar-mpfm-dashboard-development.git
+cd roxar-mpfm-dashboard-development
+npm install
+npm run dev
