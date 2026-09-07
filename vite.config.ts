@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/roxar-mpfm-dashboard-development/', // ← ADD THIS LINE HERE
+  base: '/roxar-mpfm-dashboard-development/', // ← ADD THIS LINE
   plugins: [react(), tailwindcss(), viteSingleFile()],
   resolve: {
     alias: {
