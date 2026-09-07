@@ -1,0 +1,8 @@
+cd "C:\Users\mrari\OneDrive\دسکتاپ\Agent\multiphase-flow-metering-application"
+npm install
+npm approve-scripts esbuild sharp unrs-resolver
+npm run dev
+
+
+http://192.168.57.235:3000
+http://localhost:3000

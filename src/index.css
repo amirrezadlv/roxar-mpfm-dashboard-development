@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+@theme {
+  --color-oil: #f5a524;
+  --color-water: #38bdf8;
+  --color-gas: #a78bfa;
+  --color-liquid: #34d399;
+  --color-pressure: #fb7185;
+  --color-temp: #fb923c;
+  --color-panel: #0f172a;
+  --color-panel-2: #131c31;
+  --color-line: #1e293b;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background: radial-gradient(1200px 600px at 10% -10%, rgba(56, 189, 248, 0.08), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgba(245, 165, 36, 0.07), transparent 60%),
+    #070b16;
+  color: #e2e8f0;
+  font-feature-settings: "tnum" 1, "cv11" 1;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #334155 transparent;
+}
+*::-webkit-scrollbar { height: 8px; width: 8px; }
+*::-webkit-scrollbar-thumb { background: #334155; border-radius: 8px; }
+
+.recharts-default-tooltip { display: none; }
+
+.card {
+  @apply rounded-xl border border-slate-800/80 bg-slate-900/70 backdrop-blur-sm shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset];
+}
+
+.num { font-variant-numeric: tabular-nums; }
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+.pulse-dot { animation: pulse-dot 1.8s ease-in-out infinite; }
+
+input[type="number"] { -moz-appearance: textfield; }
+input[type="number"]::-webkit-inner-spin-button { opacity: 0.4; }
