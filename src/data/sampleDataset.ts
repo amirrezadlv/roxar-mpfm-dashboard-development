@@ -10,7 +10,7 @@
 import { buildDataset, contextFromFileName } from "./parser";
 import type { Dataset } from "./types";
 
-export const SAMPLE_FILE_NAME = "Pad#20_AZN#59_P1avg,P2avg_198_5_67_3_psi_Choke_size=20_64_14_Aug.xlsx";
+export const SAMPLE_FILE_NAME = "Pad#00_XXX#00_P1avg,P2avg_198_5_67_3_psi_Choke_size=20_64_14_Aug.xlsx";
 
 export const SAMPLE_HEADERS = [
   "Date",
