@@ -12,7 +12,6 @@
 
 </div>
 
-![Overview tab](docs/overview.png)
 
 ## Why
 
