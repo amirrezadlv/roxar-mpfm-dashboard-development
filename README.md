@@ -1,8 +1,8 @@
 <div align="center">
 
-# Roxar MPFM 2600 · Multiphase Insight Console
+#  MPFM · Multiphase Insight Console
 
-**A browser-based executive dashboard for Roxar multiphase flow meter data — ingest `.xlsx` exports, audit the meter's PVT engine, validate Venturi closure, and characterise phase / slug behaviour in seconds.**
+**A browser-based executive dashboard for multiphase flow meter data — ingest `.xlsx` exports, audit the meter's PVT engine, validate Venturi closure, and characterise phase / slug behaviour in seconds.**
 
 [![Live demo](https://img.shields.io/badge/demo-amirrezadlv.github.io%2Froxar--mpfm--dashboard--development-0ea5e9?style=for-the-badge&logo=github)](https://amirrezadlv.github.io/roxar-mpfm-dashboard-development/)
 [![Built with React](https://img.shields.io/badge/React-19-61dafb?style=for-the-badge&logo=react)](https://react.dev)
@@ -15,7 +15,7 @@
 
 ## Why
 
-Roxar MPFM 2600 field exports arrive as Excel workbooks with mixed unitsystems, native meter columns interleaved with derived ones, and almost no
+MPFM field exports arrive as Excel workbooks with mixed unitsystems, native meter columns interleaved with derived ones, and almost no
 engineering narrative attached. The standard workflow — open the file,
 rebuild the conversions in a spreadsheet, sanity-check the PVT table, then
 hand-interpret phase and slug dynamics — is slow, error-prone, and
