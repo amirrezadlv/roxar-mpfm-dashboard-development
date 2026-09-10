@@ -4,7 +4,7 @@
 
 **A browser-based executive dashboard for multiphase flow meter data — ingest `.xlsx` exports, audit the meter's PVT engine, validate Venturi closure, and characterise phase / slug behaviour in seconds.**
 
-[![Live demo](https://img.shields.io/badge/demo-amirrezadlv.github.io%2Froxar--mpfm--dashboard--development-0ea5e9?style=for-the-badge&logo=github)](https://amirrezadlv.github.io/roxar-mpfm-dashboard-development/)
+[![Live demo](https://img.shields.io/badge/demo-amirrezadlv.github.io%2mpfm--dashboard-0ea5e9?style=for-the-badge&logo=github)](https://amirrezadlv.github.io/roxar-mpfm-dashboard-development/)
 [![Built with React](https://img.shields.io/badge/React-19-61dafb?style=for-the-badge&logo=react)](https://react.dev)
 [![Vite](https://img.shields.io/badge/Vite-7-646cff?style=for-the-badge&logo=vite)](https://vite.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org)
