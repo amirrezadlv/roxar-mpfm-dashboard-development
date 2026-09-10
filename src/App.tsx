@@ -93,9 +93,6 @@ export default function App() {
           </div>
 
           <div className="hidden lg:flex items-center gap-1.5">
-            {ds.context.well && <Badge tone="oil">{ds.context.well}</Badge>}
-            {ds.context.pad && <Badge tone="sky">{ds.context.pad}</Badge>}
-            {analysis.choke.chokeIn !== undefined && <Badge tone="slate">choke {ds.context.chokeNumerator}/{ds.context.chokeDenominator}"</Badge>}
             <Badge tone={analysis.phaseShare.oil >= 50 ? "oil" : "water"}>
               <span className={cn("h-1.5 w-1.5 rounded-full pulse-dot", analysis.phaseShare.oil >= 50 ? "bg-oil" : "bg-water")} />
               {analysis.phaseShare.oil >= 50 ? "oil-continuous" : "water-continuous"}
