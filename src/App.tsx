@@ -1,5 +1,5 @@
 /**
- * Roxar MPFM 2600 – Executive Multiphase Dashboard
+ * MPFM – Executive Multiphase Dashboard
  *
  * Layers:
  *   src/data    – ingestion (xlsx → canonical MpfmRecord)
@@ -87,7 +87,7 @@ export default function App() {
               </svg>
             </div>
             <div className="min-w-0">
-              <h1 className="text-sm font-semibold tracking-wide text-slate-100 leading-tight">Roxar MPFM 2600 · Multiphase Insight Console</h1>
+              <h1 className="text-sm font-semibold tracking-wide text-slate-100 leading-tight">MPFM · Multiphase Insight Console</h1>
               <p className="text-[11px] text-slate-400 truncate max-w-[60vw]" title={ds.name}>{ds.name}</p>
             </div>
           </div>
@@ -172,7 +172,7 @@ export default function App() {
       </main>
 
       <footer className="border-t border-slate-800/60 py-3 text-center text-[11px] text-slate-500">
-        Data → Engine → UI · Standard conditions 15.6 °C / 1.01325 bar(a) · Drag &amp; drop a Roxar MPFM 2600 export anywhere to analyse
+        Data → Engine → UI · Standard conditions 15.6 °C / 1.01325 bar(a) · Drag &amp; drop an MPFM export anywhere to analyse
       </footer>
 
       {dragging && (
