@@ -1,5 +1,5 @@
 /**
- * Data layer – embedded sample: Pad#00_AZN#00_P1avg,P2avg_198_5_67_3_psi_Choke_size=20_64_14_Aug.xlsx
+ * Data layer – embedded sample: sample.xlsx
  *
  * Stored as compact tuples and re-hydrated into the exact header vocabulary of
  * the field export so it flows through the identical ingestion pipeline.
@@ -10,7 +10,7 @@
 import { buildDataset, contextFromFileName } from "./parser";
 import type { Dataset } from "./types";
 
-export const SAMPLE_FILE_NAME = "Pad#00_AZN#00_P1avg,P2avg_198_5_67_3_psi_Choke_size=20_64_14_Aug.xlsx";
+export const SAMPLE_FILE_NAME = "sample.xlsx";
 
 export const SAMPLE_HEADERS = [
   "Date",
