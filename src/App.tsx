@@ -6,7 +6,7 @@
  *   src/engine  – PVT & MPFM physics, dataset analytics
  *   src/ui      – presentation (this shell + tabs)
  */
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState, useEffect, startTransition } from "react";
 import { parseWorkbook } from "./data/parser";
 import { loadSampleDataset } from "./data/sampleDataset";
 import type { Dataset } from "./data/types";
@@ -43,6 +43,11 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [liveUrl, setLiveUrl] = useState("");
+  const [liveUrlInput, setLiveUrlInput] = useState("");
+  const [liveConnected, setLiveConnected] = useState(false);
+  const [lastSync, setLastSync] = useState<Date | null>(null);
+  const [syncing, setSyncing] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const analysis = useMemo(() => analyzeDataset(ds, fp, pvt), [ds, fp, pvt]);
@@ -66,6 +71,86 @@ export default function App() {
     const f = e.dataTransfer.files?.[0];
     if (f) void ingest(f);
   };
+
+  /** Fetch a remote XLSX and ingest it */
+  /** Fetch a remote Google Sheet and ingest it natively */
+  const ingestUrl = useCallback(async (rawUrl: string, isBackground = false) => {
+    try {
+      // Only show the UI loading state if this is the initial manual connection
+      if (!isBackground) setSyncing(true);
+      setError(null);
+
+      let targetUrl = rawUrl;
+      const match = rawUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+      if (match) {
+        targetUrl = `https://docs.google.com/spreadsheets/d/${match[1]}/export?format=csv`;
+      }
+
+      const resp = await fetch(targetUrl);
+      if (!resp.ok) {
+        throw new Error(`HTTP ${resp.status}: Could not fetch data. Ensure the Sheet is shared as "Anyone with the link can view".`);
+      }
+      
+      const blob = await resp.blob();
+      const buf = await blob.arrayBuffer();
+      
+      const parsed = parseWorkbook(buf, rawUrl.split("/").pop() || "live.csv");
+      if (!parsed.records.length) throw new Error("No data rows recognised in workbook.");
+      
+      // Use startTransition to process the heavy data update in the background without freezing the UI
+      startTransition(() => {
+        setDs(parsed);
+        // Only force the tab jump on the very first connection, not during background polling
+        if (!isBackground) {
+          setTab("overview");
+        }
+      });
+      
+      setLastSync(new Date());
+      if (!isBackground) setLiveConnected(true);
+    } catch (e) {
+      setError(e instanceof TypeError && e.message === "Failed to fetch" 
+        ? "Network error: Failed to reach Google Sheets. Check your internet connection." 
+        : (e instanceof Error ? e.message : String(e))
+      );
+      if (!isBackground) setLiveConnected(false);
+    } finally {
+      if (!isBackground) setSyncing(false);
+    }
+  }, []);
+
+  /** Start/stop live polling every 15 seconds */
+  useEffect(() => {
+    if (!liveUrl) return;
+    
+    let active = true;
+    let timerId: number;
+
+    const runLiveFeed = async () => {
+      // 1. Initial foreground fetch (shows "Syncing...", jumps to Overview tab)
+      await ingestUrl(liveUrl, false);
+      
+      // 2. Start the silent background polling loop
+      const poll = async () => {
+        if (!active) return;
+        await ingestUrl(liveUrl, true); // true = run silently in the background
+        if (active) {
+          timerId = window.setTimeout(poll, 15_000);
+        }
+      };
+      
+      if (active) {
+        timerId = window.setTimeout(poll, 15_000);
+      }
+    };
+
+    void runLiveFeed();
+
+    return () => {
+      active = false;
+      window.clearTimeout(timerId);
+    };
+  }, [liveUrl, ingestUrl]);
 
   const s = analysis.stats;
   const alarmCount = analysis.flagSummary.filter((f) => f.severity === "alarm").reduce((x, f) => x + f.count, 0);
@@ -111,6 +196,47 @@ export default function App() {
             <button onClick={() => setSettingsOpen((o) => !o)} className={cn("rounded-md border text-xs px-3 py-1.5", settingsOpen ? "border-sky-500 text-sky-300" : "border-slate-700 text-slate-200 hover:bg-slate-800")}>
               Fluids ⚙
             </button>
+          </div>
+
+          {/* Live URL Controls */}
+          <div className="flex items-center gap-2 border-t border-slate-800/60 pt-2 mt-2 lg:border-t-0 lg:pt-0 lg:mt-0 lg:border-l lg:pl-4">
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] text-slate-400">Live URL:</span>
+              <input
+                type="text"
+                value={liveUrlInput}
+                onChange={(e) => setLiveUrlInput(e.target.value)}
+                placeholder="https://example.com/data.xlsx"
+                className="w-48 rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-[11px] text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-sky-500"
+                onKeyDown={(e) => e.key === "Enter" && setLiveUrl(liveUrlInput)}
+              />
+              <button
+                onClick={() => setLiveUrl(liveUrlInput)}
+                disabled={!liveUrlInput || syncing}
+                className="rounded-md bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 text-slate-950 text-xs font-semibold px-2 py-1.5 shadow disabled:cursor-not-allowed"
+              >
+                {syncing ? "Syncing..." : "Start Live"}
+              </button>
+              {liveUrl && (
+                <button
+                  onClick={() => { setLiveUrl(""); setLiveConnected(false); }}
+                  className="rounded-md bg-rose-600 hover:bg-rose-500 text-slate-950 text-xs font-semibold px-2 py-1.5 shadow"
+                >
+                  Stop
+                </button>
+              )}
+            </div>
+            {liveConnected && (
+              <div className="flex items-center gap-1 text-[10px] text-emerald-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Live
+              </div>
+            )}
+            {lastSync && (
+              <div className="text-[10px] text-slate-500">
+                Sync: {lastSync.toLocaleTimeString()}
+              </div>
+            )}
           </div>
         </div>
 
